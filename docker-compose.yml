@@ -1,0 +1,55 @@
+version: "3"
+services:
+  redis:
+    image: redis
+    restart: always
+  postgres:
+    image: postgres
+    environment:
+      POSTGRES_USER: outline
+      POSTGRES_PASSWORD: MyAmazingPassword123
+      POSTGRES_DB: outline
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: always
+  outline:
+    image: outlinewiki/outline:latest
+    command: sh -c "yarn sequelize:migrate --env production-ssl-disabled && yarn start"
+    environment:
+      ########## Outline Database
+      - DATABASE_URL=postgres://outline:MyAmazingPassword123@postgres:5432/outline
+      - DATABASE_URL_TEST=postgres://outline:MyAmazingPassword123@postgres:5432/outline-test
+      - REDIS_URL=redis://redis:6379
+      - SECRET_KEY=23e5c418cd23eeed318f5a1f977d86d0c05fee5e89ad6ff889b2063661cf143f
+      - UTILS_SECRET=7f25f96d414ebbfe4ba95859973028df84faaa3ead297a45ee4d0b1c4c88fafa
+      ########## Outline mail settings
+      - SMTP_HOST=smtpserver.example.com
+      - SMTP_PORT=25
+      - SMTP_USERNAME=outline@example.com
+      - SMTP_PASSWORD=MyAmazingPassword123
+      - SMTP_FROM_EMAIL=outline@example.com
+      - SMTP_REPLY_EMAIL=outline@example.com
+      ########## Outline Default URL
+      - URL=https://yourarecord.tld
+      ########## Outline Slack settings
+      - SLACK_APP_ID=SLACKAPPIDGoesHere  
+      - SLACK_KEY=SlackKeyGoesHere
+      - SLACK_SECRET=SlackSecret goes here
+      ########## Outline S3 Provider credentials
+      - AWS_ACCESS_KEY_ID=ScwAccessKeyGoesHere
+      - AWS_SECRET_ACCESS_KEY=ScwSecretAccessKeyGoesHere
+      - AWS_REGION=fr-par
+      - AWS_S3_UPLOAD_BUCKET_URL=https://s3.fr-par.scw.cloud
+      - AWS_S3_UPLOAD_BUCKET_NAME=your-bucket-name
+      - AWS_S3_UPLOAD_MAX_SIZE=26214400
+      - AWS_S3_FORCE_PATH_STYLE=true
+      - AWS_S3_ACL=private
+      - PGSSLMODE=disable
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    networks:
+      default:
+volumes:
+  pgdata:
